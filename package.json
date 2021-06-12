@@ -1,0 +1,28 @@
+{
+  "name": "server-cosmetics",
+  "version": "1.0.0",
+  "description": "The Polus.gg cosmetic server",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rose Hall (rose@polsu.gg)",
+  "license": "ISC",
+  "dependencies": {
+    "@polusgg/module-polusgg-auth-api": "^1.0.1-5",
+    "@types/express": "^4.17.12",
+    "@types/mongodb": "^3.6.17",
+    "ajv": "^6.12.6",
+    "express": "^4.17.1",
+    "got": "^11.8.2",
+    "mongodb": "^3.6.9",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
+    "eslint": "^7.28.0",
+    "eslint-plugin-tsdoc": "^0.2.14"
+  }
+}
