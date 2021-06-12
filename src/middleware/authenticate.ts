@@ -29,10 +29,32 @@ export function authenticate(fn: (req: AuthenticatedRequest, res: Response) => v
       return;
     }
 
-    const user = JSON.parse((await got.post(`https://account.polus.gg/api-private/v1/users/${uuid}`)).body) as ApiResponse<UserResponseStructure>;
+    let user;
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      user = JSON.parse((await got(`https://account.polus.gg/api-private/v1/users/${uuid}`, { headers: { Authorization: `Bearer ${process.env.ACCOUNT_AUTH_TOKEN}`, Accept: "application/json" } })).body) as ApiResponse<UserResponseStructure>;
+    } catch (err) {
+      if (err.response.statusCode === 404) {
+        res.send({
+          ok: false,
+          cause: `Authentication error: Invalid authorization header`,
+        });
+
+        return;
+      }
+
+      res.send({
+        ok: false,
+        cause: `Authentication error: ${err}`,
+      });
+    }
 
     if (!user.success) {
-      throw new Error(user.data.message);
+      res.send({
+        ok: false,
+        cause: `Authentication error: ${user.data.message}`,
+      });
     }
 
     if (user.data.client_token !== token) {

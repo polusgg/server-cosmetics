@@ -18,40 +18,23 @@ export type Item = {
   }
 );
 
-export const itemSchema = {
+export const partialItemSchema = {
   type: "object",
   properties: {
-    id: { type: "string" },
     name: { type: "string" },
-    amongUsId: { type: "number" },
     resource: {
       type: "object",
       properties: {
-        name: "string",
-        id: "number",
+        name: { type: "string" },
+        id: { type: "number" },
       },
+      required: ["name", "id"],
     },
+    type: { type: "string" },
   },
-  oneOf: [
-    {
-      properties: {
-        type: { "const": "HAT" },
-      },
-    },
-    {
-      properties: {
-        type: { "const": "PET" },
-      },
-    },
-    {
-      properties: {
-        type: { "const": "SKIN" },
-      },
-    },
-    {
-      properties: {
-        type: { "const": "MODEL" },
-      },
-    },
-  ],
+};
+
+export const itemSchema = {
+  ...partialItemSchema,
+  required: ["name", "resource", "type"],
 };

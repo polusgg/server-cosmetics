@@ -7,7 +7,7 @@ export class Database<Collections extends Record<string, Collection>> {
     const client = await MongoClient.connect(url, { useUnifiedTopology: true });
     const database = client.db(databaseName);
 
-    const instantiatedCollections: { [key in keyof Collections]: Collection<Collections[key]>; } = Object.keys(collections).map(key => database.collection(key)) as any;
+    const instantiatedCollections: { [key in keyof Collections]: Collection<Collections[key]>; } = Object.fromEntries(Object.entries(collections).map(([key]) => [key, database.collection(key)])) as any;
 
     return new Database(database, instantiatedCollections);
   }
