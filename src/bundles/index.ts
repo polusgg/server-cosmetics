@@ -1,4 +1,4 @@
-import { bundleSchema, partialBundleSchema } from "../database/types/bundle";
+import { Bundle, bundleSchema, partialBundleSchema } from "../database/types/bundle";
 import { authenticate } from "../middleware/authenticate";
 import { Router as createRouter } from "express";
 import formUrlEncoded from "form-urlencoded";
@@ -7,6 +7,7 @@ import got, { Response } from "got";
 import * as crypto from "crypto";
 import { uuid } from "uuidv4";
 import Ajv from "ajv";
+import { Item } from "../database/types";
 
 declare const database: CosmeticDatabase;
 
@@ -17,6 +18,35 @@ const ajv = new Ajv();
 if (process.env.STEAM_PUBLISHER_KEY === undefined) {
   throw new Error("Process environment variable missing: STEAM_PUBLISHER_KEY");
 }
+
+router.get("/", async (req, res) => {
+  const emitter = await database.collections.bundles.find({});
+  const bundles: Bundle[] = [];
+
+  emitter.on("data", bundle => {
+    bundles.push(bundle);
+  });
+
+  const emitter2 = database.collections.items.find({ type: req.body.type }).sort({ amongUsId: -1 }).limit(1);
+  const items: Map<string, Item> = new Map();
+
+  emitter2.on("data", (item: Item) => {
+    items.set(item.id, item);
+  });
+
+  await Promise.all([
+    new Promise(resolve => emitter.once("end", resolve)),
+    new Promise(resolve => emitter2.once("end", resolve)),
+  ]);
+
+  const c: any[] = [...bundles];
+
+  for (let i = 0; i < bundles.length; i++) {
+    c[i].items = bundles[i].items.map(item => items.get(item));
+  }
+
+  res.send(c);
+});
 
 router.get("/:bundle", async (req, res) => {
   const id = req.params.bundle.split("-").join("");
@@ -42,15 +72,15 @@ router.get("/:bundle", async (req, res) => {
 });
 
 router.put("/:bundle", authenticate(async (req, res): Promise<void> => {
-  // if (!req.user.perks.includes("cosmetic.bundle.create")) {
-  //   res.status(403);
-  //   res.send({
-  //     ok: false,
-  //     cause: `Permissions Error: Missing perk "cosmetic.bundle.create"`,
-  //   });
+  if (!req.user.perks.includes("cosmetic.bundle.create")) {
+    res.status(403);
+    res.send({
+      ok: false,
+      cause: `Permissions Error: Missing perk "cosmetic.bundle.create"`,
+    });
 
-  //   return;
-  // }
+    return;
+  }
 
   req.body.id = req.params.bundle.split("-").join("");
 
@@ -85,15 +115,15 @@ router.put("/:bundle", authenticate(async (req, res): Promise<void> => {
 }));
 
 router.patch("/:bundle", authenticate(async (req, res): Promise<void> => {
-  // if (!req.user.perks.includes("cosmetic.bundle.update")) {
-  //   res.status(403);
-  //   res.send({
-  //     ok: false,
-  //     cause: `Permissions Error: Missing perk "cosmetic.bundle.update"`,
-  //   });
+  if (!req.user.perks.includes("cosmetic.bundle.update")) {
+    res.status(403);
+    res.send({
+      ok: false,
+      cause: `Permissions Error: Missing perk "cosmetic.bundle.update"`,
+    });
 
-  //   return;
-  // }
+    return;
+  }
 
   req.body.id = req.params.bundle.split("-").join("");
 
@@ -207,8 +237,10 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
     return;
   }
 
+  const purchaseId = uuid();
+
   await database.collections.purchases.insertOne({
-    id: uuid(),
+    id: purchaseId,
     cost: bundle.priceUsd,
     purchaser: req.user.client_id,
     timeCreated: Date.now(),
@@ -223,5 +255,6 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
 
   res.send({
     ok: true,
+    purchaseId,
   });
 }));

@@ -12,7 +12,7 @@ export const router = createRouter();
 
 const ajv = new Ajv();
 
-router.get("/:purchase", async (req, res) => {
+router.get("/:purchase", authenticate(async (req, res) => {
   const id = req.params.purchase.split("-").join("");
 
   const purchase = await database.collections.purchases.findOne({ id });
@@ -27,24 +27,34 @@ router.get("/:purchase", async (req, res) => {
     return;
   }
 
+  if (purchase.purchaser !== req.user.client_id && !req.user.perks.includes("purchase.get.all")) {
+    res.status(403);
+    res.send({
+      ok: false,
+      cause: `Permissions Error: Missing perk "purchase.get.all"`,
+    });
+
+    return;
+  }
+
   delete (purchase as any)._id;
 
   res.send({
     ok: true,
     data: purchase,
   });
-});
+}));
 
 router.patch("/:purchase", authenticate(async (req, res): Promise<void> => {
-  // if (!req.user.perks.includes("cosmetic.purchase.update")) {
-  //   res.status(403);
-  //   res.send({
-  //     ok: false,
-  //     cause: `Permissions Error: Missing perk "cosmetic.purchase.update"`,
-  //   });
+  if (!req.user.perks.includes("purchase.update")) {
+    res.status(403);
+    res.send({
+      ok: false,
+      cause: `Permissions Error: Missing perk "purchase.update"`,
+    });
 
-  //   return;
-  // }
+    return;
+  }
 
   req.body.id = req.params.purchase.split("-").join("");
 
@@ -91,11 +101,11 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
     return;
   }
 
-  if (purchase.purchaser !== req.user.client_id) {
+  if (purchase.purchaser !== req.user.client_id && !req.user.perks.includes("purchase.authenticate.all")) {
     res.status(403);
     res.send({
       ok: false,
-      cause: "You were not the purchaser",
+      cause: `Permissions Error: Missing perk "purchase.authenticate.all"`,
     });
 
     return;

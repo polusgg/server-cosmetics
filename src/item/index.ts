@@ -34,15 +34,15 @@ router.get("/:item", async (req, res) => {
 });
 
 router.put("/:item", authenticate(async (req, res): Promise<void> => {
-  // if (!req.user.perks.includes("cosmetic.item.create")) {
-  //   res.status(403);
-  //   res.send({
-  //     ok: false,
-  //     cause: `Permissions Error: Missing perk "cosmetic.item.create"`,
-  //   });
+  if (!req.user.perks.includes("cosmetic.item.create")) {
+    res.status(403);
+    res.send({
+      ok: false,
+      cause: `Permissions Error: Missing perk "cosmetic.item.create"`,
+    });
 
-  //   return;
-  // }
+    return;
+  }
 
   req.body.id = req.params.item.split("-").join("");
 
@@ -68,7 +68,7 @@ router.put("/:item", authenticate(async (req, res): Promise<void> => {
 
   await new Promise(resolve => emitter.once("end", resolve));
 
-  req.body.amongUsId = items.length > 0 ? items[0].amongUsId + 1 : 0;
+  req.body.amongUsId = items.length > 0 ? items[0].amongUsId + 1 : 10_000_000;
 
   try {
     await database.collections.items.insertOne(req.body);
@@ -88,15 +88,15 @@ router.put("/:item", authenticate(async (req, res): Promise<void> => {
 }));
 
 router.patch("/:item", authenticate(async (req, res): Promise<void> => {
-  // if (!req.user.perks.includes("cosmetic.item.update")) {
-  //   res.status(403);
-  //   res.send({
-  //     ok: false,
-  //     cause: `Permissions Error: Missing perk "cosmetic.item.update"`,
-  //   });
+  if (!req.user.perks.includes("cosmetic.item.update")) {
+    res.status(403);
+    res.send({
+      ok: false,
+      cause: `Permissions Error: Missing perk "cosmetic.item.update"`,
+    });
 
-  //   return;
-  // }
+    return;
+  }
 
   req.body.id = req.params.item.split("-").join("");
 
