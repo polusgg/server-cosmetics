@@ -1,0 +1,10 @@
+version: "3"
+services:
+  cosmetics:
+    image: registry.digitalocean.com/polusgg/server-cosmetics
+    # Environment variables
+    environment:
+      DATABASE_URL: "mongodb://198.199.75.62:27017"
+      DATABASE_NAME: "pgg-cosmetics"
+      STEAM_PUBLISHER_KEY: "secret"
+      ACCOUNT_AUTH_TOKEN: "secret"

@@ -1,0 +1,4 @@
+engine-strict=true
+@nodepolus:registry=https://npm.polus.gg
+@polusgg:registry=https://npm.polus.gg
+//npm.polus.gg/:_authToken=${NPM_AUTH_TOKEN}
