@@ -25,16 +25,17 @@ export const partialItemSchema = {
     resource: {
       type: "object",
       properties: {
-        name: { type: "string" },
+        path: { type: "string" },
         id: { type: "number" },
       },
       required: ["name", "id"],
     },
+    thumbnail: { type: "string" },
     type: { type: "string" },
   },
 };
 
 export const itemSchema = {
   ...partialItemSchema,
-  required: ["name", "resource", "type"],
+  required: ["name", "resource", "thumbnail", "type"],
 };
