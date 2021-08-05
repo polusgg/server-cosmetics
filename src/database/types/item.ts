@@ -2,10 +2,12 @@ export type Item = {
   id: string;
   name: string;
   amongUsId: number;
+  thumbnail: string;
   resource: {
-    name: string;
+    path: string;
     id: number;
   };
+  author: string;
 } & (
   {
     type: "HAT";
@@ -28,14 +30,15 @@ export const partialItemSchema = {
         path: { type: "string" },
         id: { type: "number" },
       },
-      required: ["name", "id"],
+      required: ["path", "id"],
     },
     thumbnail: { type: "string" },
     type: { type: "string" },
+    author: { type: "string" },
   },
 };
 
 export const itemSchema = {
   ...partialItemSchema,
-  required: ["name", "resource", "thumbnail", "type"],
+  required: ["name", "resource", "thumbnail", "type", "author"],
 };

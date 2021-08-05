@@ -10,6 +10,24 @@ export const router = createRouter();
 
 const ajv = new Ajv();
 
+router.get("/next", async (req, res) => {
+  const emitter = database.collections.items.find().sort({ amongUsId: -1 }).limit(1);
+  const items: Item[] = [];
+
+  emitter.on("data", item => {
+    items.push(item);
+  });
+
+  await new Promise(resolve => emitter.once("end", resolve));
+
+  const amongUsId = items.length > 0 ? items[0].amongUsId + 2 : 10_000_000;
+
+  res.send({
+    ok: true,
+    data: amongUsId,
+  });
+});
+
 router.get("/:item", async (req, res) => {
   const id = req.params.item.split("-").join("");
 

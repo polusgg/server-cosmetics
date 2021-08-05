@@ -12,6 +12,10 @@ export type Purchase = {
   } | {
     name: "PLAY_STORE";
     transactionId: string;
+  } | {
+    name: "FREE";
+    // a note for the reason an item was given out freely
+    note: string;
   };
 };
 
@@ -41,6 +45,12 @@ export const partialPurchaseSchema = {
             transactionId: { type: "string" },
           },
           required: ["name"],
+        },
+        {
+          properties: {
+            name: { type: "string", "const": "FREE" },
+            note: { type: "string" },
+          },
         },
       ],
     },

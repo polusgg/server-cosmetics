@@ -1,4 +1,4 @@
 {
-  "url": "mongodb://198.199.75.62:27017",
-  "databaseName": "pgg-cosmetics"
+  "url": "mongodb+srv://mongo-db-location😳",
+  "caCertPath": "./yourpath.txt"
 }
