@@ -1,4 +1,4 @@
-import { partialPurchaseSchema } from "../database/types/purchase";
+import { partialPurchaseSchema, Purchase } from "../database/types/purchase";
 import { authenticate } from "../middleware/authenticate";
 import { Router as createRouter } from "express";
 import formUrlEncoded from "form-urlencoded";
@@ -11,6 +11,22 @@ declare const database: CosmeticDatabase;
 export const router = createRouter();
 
 const ajv = new Ajv();
+
+router.get("/", authenticate(async (req, res) => {
+  const purchaser = req.user.client_id;
+
+  const dbres = await database.collections.purchases.find({ purchaser });
+  const dbfinal: Purchase[] = [];
+
+  dbres.on("data", d => {
+    delete d._id;
+    dbfinal.push(d);
+  });
+
+  dbres.on("end", e => {
+    res.send(dbfinal);
+  });
+}));
 
 router.get("/:purchase", authenticate(async (req, res) => {
   const id = req.params.purchase.split("-").join("");
