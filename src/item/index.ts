@@ -77,16 +77,16 @@ router.put("/:item", authenticate(async (req, res): Promise<void> => {
     return;
   }
 
-  const emitter = database.collections.items.find({ type: req.body.type }).sort({ amongUsId: -1 }).limit(1);
-  const items: Item[] = [];
+  // const emitter = database.collections.items.find({ type: req.body.type }).sort({ amongUsId: -1 }).limit(1);
+  // const items: Item[] = [];
+  //
+  // emitter.on("data", item => {
+  //   items.push(item);
+  // });
+  //
+  // await new Promise(resolve => emitter.once("end", resolve));
 
-  emitter.on("data", item => {
-    items.push(item);
-  });
-
-  await new Promise(resolve => emitter.once("end", resolve));
-
-  req.body.amongUsId = items.length > 0 ? items[0].amongUsId + 1 : 10_000_000;
+  // req.body.amongUsId = items.length > 0 ? items[0].amongUsId + 1 : 10_000_000;
 
   try {
     await database.collections.items.insertOne(req.body);

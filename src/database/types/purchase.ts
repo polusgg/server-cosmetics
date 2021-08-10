@@ -1,5 +1,6 @@
 export type Purchase = {
   id: string;
+  bundleId: string;
   cost: number;
   purchaser: string;
   timeCreated: number;
@@ -25,8 +26,8 @@ export const partialPurchaseSchema = {
     id: { type: "string" },
     cost: { type: "number" },
     purchaser: { type: "string" },
-    timeCreated: { type: "number" },
-    timeFinalized: { type: "number" },
+    timeCreaated: { type: "number" },
+    timeFinlized: { type: "number" },
     finalized: { type: "boolean" },
     vendorData: {
       type: "object",

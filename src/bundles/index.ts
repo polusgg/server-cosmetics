@@ -241,6 +241,7 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
 
   await database.collections.purchases.insertOne({
     id: purchaseId,
+    bundleId: bundle.id,
     cost: bundle.priceUsd,
     purchaser: req.user.client_id,
     timeCreated: Date.now(),

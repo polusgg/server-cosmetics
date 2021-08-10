@@ -5,6 +5,7 @@ export type Item = {
   thumbnail: string;
   resource: {
     path: string;
+    url: string;
     id: number;
   };
   author: string;
@@ -28,9 +29,10 @@ export const partialItemSchema = {
       type: "object",
       properties: {
         path: { type: "string" },
+        url: { type: "string" },
         id: { type: "number" },
       },
-      required: ["path", "id"],
+      required: ["path", "url", "id"],
     },
     thumbnail: { type: "string" },
     type: { type: "string" },

@@ -12,10 +12,10 @@ export const router = createRouter();
 
 const ajv = new Ajv();
 
-router.get("/", authenticate(async (req, res) => {
+router.get("/", authenticate((req, res) => {
   const purchaser = req.user.client_id;
 
-  const dbres = await database.collections.purchases.find({ purchaser });
+  const dbres = database.collections.purchases.find({ purchaser });
   const dbfinal: Purchase[] = [];
 
   dbres.on("data", d => {
@@ -23,8 +23,11 @@ router.get("/", authenticate(async (req, res) => {
     dbfinal.push(d);
   });
 
-  dbres.on("end", e => {
-    res.send(dbfinal);
+  dbres.on("end", () => {
+    res.send({
+      ok: true,
+      data: dbfinal,
+    });
   });
 }));
 
@@ -93,7 +96,7 @@ router.patch("/:purchase", authenticate(async (req, res): Promise<void> => {
     res.status(500);
     res.send({
       ok: false,
-      cause: `Internal Server Error: failed to add purchase to database ${err}`,
+      cause: `Internal Server Error: failed to update purchase in database ${err}`,
     });
 
     return;
@@ -174,13 +177,25 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
         return;
       }
 
+      purchase.finalized = true;
+      purchase.timeFinalized = Date.now();
+
+      await database.collections.purchases.updateOne({ id: req.params.purchase.split("-").join("") }, purchase);
+
       res.status(200);
       res.send({
         ok: true,
       });
-      break;
+
+      return;
     }
     case "PLAY_STORE":
-      break;
+    case "FREE":
+    default:
+      res.status(400);
+      res.send({
+        ok: false,
+        cause: "Unsupported vendor",
+      });
   }
 }));
