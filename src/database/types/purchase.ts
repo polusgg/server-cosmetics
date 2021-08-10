@@ -26,8 +26,8 @@ export const partialPurchaseSchema = {
     id: { type: "string" },
     cost: { type: "number" },
     purchaser: { type: "string" },
-    timeCreaated: { type: "number" },
-    timeFinlized: { type: "number" },
+    timeCreated: { type: "number" },
+    timeFinalized: { type: "number" },
     finalized: { type: "boolean" },
     vendorData: {
       type: "object",
