@@ -28,6 +28,16 @@ router.get("/next", async (req, res) => {
   });
 });
 
+router.get("/", authenticate(async (req, res) => {
+  //TODO: implement perk for cosmetics
+
+  const purchases = await database.collections.purchases.find({ purchaser: req.user.client_id });
+  const bundles = await database.collections.bundles.find({ id: { $in: await purchases.map(p => p.bundleId).toArray() } });
+  const items = await database.collections.items.find({ id: { $in: await (await bundles.toArray()).map(p => p.items).flat() } });
+
+  res.send({ ok: true, data: await items.toArray() });
+}));
+
 router.get("/:item", async (req, res) => {
   const id = req.params.item.split("-").join("");
 

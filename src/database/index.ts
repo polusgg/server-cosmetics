@@ -8,7 +8,7 @@ export class Database<Collections extends Record<string, Collection>> {
     console.log("connecting to mongo");
 
     // @ts-ignore
-    const client = await MongoClient.connect(config.url, { useUnifiedTopology: true, ssl: true, sslCA: config.caCertPath });
+    const client = await MongoClient.connect(config.url, { useUnifiedTopology: true, tls: true, tlsCAFile: config.caCertPath });
     const database = client.db();
 
     const instantiatedCollections: { [key in keyof Collections]: Collection<Collections[key]>; } = Object.fromEntries(Object.entries(collections).map(([key]) => [key, database.collection(key)])) as any;

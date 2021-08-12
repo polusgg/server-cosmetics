@@ -1,5 +1,5 @@
 {
-  "name": "server-cosmetics",
+  "name": "@polusgg/server-cosmetics",
   "version": "1.0.0",
   "description": "The Polus.gg cosmetic server",
   "main": "index.ts",
