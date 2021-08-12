@@ -1,4 +1,4 @@
-import { partialPurchaseSchema, Purchase } from "../database/types/purchase";
+import { partialPurchaseSchema, Purchase } from "@polusgg/module-cosmetics/src/types/purchase";
 import { authenticate } from "../middleware/authenticate";
 import { Router as createRouter } from "express";
 import formUrlEncoded from "form-urlencoded";

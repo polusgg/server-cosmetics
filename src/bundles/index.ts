@@ -1,4 +1,4 @@
-import { Bundle, bundleSchema, partialBundleSchema } from "../database/types/bundle";
+import { Bundle, bundleSchema, partialBundleSchema } from "@polusgg/module-cosmetics/src/types/bundle";
 import { authenticate } from "../middleware/authenticate";
 import { Router as createRouter } from "express";
 import formUrlEncoded from "form-urlencoded";
@@ -7,7 +7,7 @@ import got, { Response } from "got";
 import * as crypto from "crypto";
 import { uuid } from "uuidv4";
 import Ajv from "ajv";
-import { Item } from "../database/types";
+import { Item } from "@polusgg/module-cosmetics/src/types/item";
 
 declare const database: CosmeticDatabase;
 

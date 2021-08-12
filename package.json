@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@polusgg/module-polusgg-auth-api": "^1.0.1-5",
+    "@polusgg/module-cosmetics": "../module-cosmetics",
     "@types/express": "^4.17.12",
     "@types/mongodb": "^3.6.17",
     "ajv": "^6.12.6",
