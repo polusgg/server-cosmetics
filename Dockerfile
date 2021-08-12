@@ -9,7 +9,7 @@ EXPOSE 2219/tcp
 ENV NODE_ENV=production
 
 ENV DATABASE_URL \
-    DATABASE_NAME \
+    CA_CERT_PATH \
     STEAM_PUBLISHER_KEY \
     ACCOUNT_AUTH_TOKEN
 
@@ -20,11 +20,13 @@ COPY --chown=node:node package.json \
                        tsconfig.json \
                        ./
 
-COPY --chown=node:node ./dist \
-                       ./dist/
-
 RUN ["npm", "ci"]
+
+COPY --chown=node:node . \
+                       ./
+
+RUN ["npm", "run", "build"]
 
 USER node
 
-ENTRYPOINT ["npm", "run", "run:prod"]
+ENTRYPOINT ["npm", "run", "start:prod"]

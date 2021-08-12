@@ -1,4 +1,4 @@
 {
-  "url": "mongodb+srv://mongo-db-location😳",
-  "caCertPath": "./yourpath.txt"
+  "url": "mongodb+srv://",
+  "caCertPath": "ca-certificate-pggcosmetics.crt"
 }

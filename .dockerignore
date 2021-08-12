@@ -1,0 +1,10 @@
+node_modules/
+.git/
+.idea/
+
+databaseConfig.json
+
+.eslintrc
+.gitignore
+.dockerignore
+docker-compose.yml

@@ -4,9 +4,9 @@
   "description": "The Polus.gg cosmetic server",
   "main": "index.ts",
   "scripts": {
-    "start": "npm run run:dev",
-    "run:dev": "ts-node index.ts",
-    "run:prod": "node dist/index.js",
+    "start": "npm run start:dev",
+    "start:dev": "ts-node index.ts",
+    "start:prod": "node dist/index.js",
     "build": "tsc -p .",
     "clean": "rimraf ./dist",
     "lint": "eslint . --ext .ts",
