@@ -4,7 +4,7 @@ services:
     image: registry.digitalocean.com/polusgg/server-cosmetics
     # Environment variables
     environment:
-      DATABASE_URL: "mongodb://198.199.75.62:27017"
-      DATABASE_NAME: "pgg-cosmetics"
+      DATABASE_URL: "mongodb+srv://cosmetics:*@mongodb-cosmetics-8f2c7601.mongo.ondigitalocean.com/pgg-cosmetics?authSource=admin&replicaSet=mongodb-cosmetics"
+      CA_CERT_PATH: "./ca-certificate-pggcosmetics.crt"
       STEAM_PUBLISHER_KEY: "secret"
       ACCOUNT_AUTH_TOKEN: "secret"
