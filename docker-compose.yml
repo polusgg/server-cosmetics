@@ -2,6 +2,8 @@ version: "3"
 services:
   cosmetics:
     image: registry.digitalocean.com/polusgg/server-cosmetics
+    ports:
+      - "2219:2219/tcp"
     # Environment variables
     environment:
       DATABASE_URL: "mongodb+srv://cosmetics:*@mongodb-cosmetics-8f2c7601.mongo.ondigitalocean.com/pgg-cosmetics?authSource=admin&replicaSet=mongodb-cosmetics"
