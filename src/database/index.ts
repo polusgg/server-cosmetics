@@ -1,5 +1,5 @@
 import { Db, MongoClient, Collection } from "mongodb";
-import { Config } from "./types/config";
+import { Config } from "@polusgg/module-cosmetics/src/types/config";
 
 export class Database<Collections extends Record<string, Collection>> {
   constructor(protected readonly mongo: Db, public readonly collections: Collections) {}

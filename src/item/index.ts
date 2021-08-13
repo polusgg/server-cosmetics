@@ -1,5 +1,5 @@
 import { authenticate } from "../middleware/authenticate";
-import { Item, itemSchema, partialItemSchema } from "../database/types/item";
+import { Item, itemSchema, partialItemSchema } from "@polusgg/module-cosmetics/src/types/item";
 import { Router as createRouter } from "express";
 import { CosmeticDatabase } from "../..";
 import Ajv from "ajv";

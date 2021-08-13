@@ -24,6 +24,7 @@
   "homepage": "https://github.com/polusgg/server-cosmetics",
   "dependencies": {
     "@polusgg/module-polusgg-auth-api": "latest",
+    "@polusgg/module-cosmetics": "latest",
     "@types/express": "^4.17.12",
     "@types/mongodb": "^3.6.17",
     "ajv": "^6.12.6",

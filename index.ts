@@ -1,5 +1,5 @@
 import * as DatabaseConfig from "./databaseConfig.json";
-import * as DatabaseTypes from "./src/database/types/";
+import * as DatabaseTypes from "../module-cosmetics/src/types/";
 import { Database } from "./src/database";
 import { Collection } from "mongodb";
 import { router as itemRouter } from "./src/item";
