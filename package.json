@@ -1,6 +1,6 @@
 {
   "name": "server-cosmetics",
-  "version": "0.1.0-2",
+  "version": "0.1.0-3",
   "description": "The Polus.gg cosmetic server",
   "main": "index.ts",
   "scripts": {
