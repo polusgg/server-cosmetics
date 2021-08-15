@@ -24,7 +24,9 @@ router.get("/", async (req, res) => {
   const bundles: Bundle[] = [];
 
   emitter.on("data", bundle => {
-    bundles.push(bundle);
+    if ((bundle as Bundle).forSale) {
+      bundles.push(bundle);
+    }
   });
 
   const emitter2 = database.collections.items.find({ type: req.body.type }).sort({ amongUsId: -1 }).limit(1);

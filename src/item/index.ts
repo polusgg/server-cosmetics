@@ -38,6 +38,29 @@ router.get("/", authenticate(async (req, res) => {
   res.send({ ok: true, data: await items.toArray() });
 }));
 
+router.get("/auid/:item", async (req, res) => {
+  const amongUsId = parseInt(req.params.item, 10);
+
+  const item = await database.collections.items.findOne({ amongUsId });
+
+  if (item === null) {
+    res.status(404);
+    res.send({
+      ok: false,
+      cause: `Failed to find item with AmongUsId: ${amongUsId}`,
+    });
+
+    return;
+  }
+
+  delete (item as any)._id;
+
+  res.send({
+    ok: true,
+    data: item,
+  });
+});
+
 router.get("/:item", async (req, res) => {
   const id = req.params.item.split("-").join("");
 
