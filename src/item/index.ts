@@ -28,6 +28,23 @@ router.get("/next", async (req, res) => {
   });
 });
 
+//check that there are any duplicates!!!
+router.post("/next", async (req, res) => {
+  const emitter = database.collections.items.find().sort({ amongUsId: -1 }).limit(1);
+  const items: Item[] = [];
+
+  emitter.on("data", item => {
+    items.push(item);
+  });
+
+  await new Promise(resolve => emitter.once("end", resolve));
+
+  res.send({
+    ok: true,
+    data: items.filter(i => i.amongUsId == req.body.amongUsId).length > 1,
+  });
+});
+
 router.get("/", authenticate(async (req, res) => {
   //TODO: implement perk for cosmetics
 
