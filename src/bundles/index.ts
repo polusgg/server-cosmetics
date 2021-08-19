@@ -51,7 +51,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:bundle", async (req, res) => {
-  const id = req.params.bundle.split("-").join("");
+  const id = req.params.bundle;
 
   const bundle = await database.collections.bundles.findOne({ id });
 
@@ -84,7 +84,7 @@ router.put("/:bundle", authenticate(async (req, res): Promise<void> => {
     return;
   }
 
-  req.body.id = req.params.bundle.split("-").join("");
+  req.body.id = req.params.bundle;
 
   const validateBundle = ajv.compile(bundleSchema);
   const valid = validateBundle(req.body);
@@ -127,7 +127,7 @@ router.patch("/:bundle", authenticate(async (req, res): Promise<void> => {
     return;
   }
 
-  req.body.id = req.params.bundle.split("-").join("");
+  req.body.id = req.params.bundle;
 
   const validateBundle = ajv.compile(partialBundleSchema);
   const valid = validateBundle(req.body);
@@ -160,7 +160,9 @@ router.patch("/:bundle", authenticate(async (req, res): Promise<void> => {
 }));
 
 router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<void> => {
-  req.body.id = req.params.bundle.split("-").join("");
+  req.body.id = req.params.bundle;
+
+  console.log(req.body);
 
   if (req.body.userId === undefined) {
     res.status(403);
@@ -186,23 +188,41 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
 
   const orderId = BigInt(`0x${crypto.randomBytes(8).toString("hex")}`).toString();
 
+  const bundlePurchaseRequestBody = {
+    key: process.env.STEAM_PUBLISHER_KEY,
+    orderid: orderId,
+    steamid: req.body.userId,
+    appid: 1653240,
+    itemcount: 1,
+    language: "en",
+    currency: "USD",
+    // itemid: [bundle.id],
+    itemid: [543],
+    qty: [1],
+    amount: [bundle.priceUsd],
+    description: [bundle.description],
+    startdate: [new Date().toISOString()],
+    recurringamt: [bundle.priceUsd],
+    frequency: [1],
+  } as any;
+
   let steamResponse: Response<string>;
+
+  if (bundle.recurring) {
+    bundlePurchaseRequestBody.billingtype = ["Steam"];
+    bundlePurchaseRequestBody.period = ["Month"];
+  }
+
+  console.log()
 
   try {
     steamResponse = await got.post("https://partner.steam-api.com/ISteamMicroTxnSandbox/InitTxn/v3/", {
-      body: formUrlEncoded({
-        key: process.env.STEAM_PUBLISHER_KEY,
-        orderid: orderId,
-        steamid: req.body.userId,
-        appid: 1653240,
-        itemcount: 1,
-        language: "en",
-        currency: "USD",
-        itemid: [bundle.id],
-        qty: [1],
-        amount: [bundle.priceUsd],
-        description: [bundle.description],
-      }),
+      body: formUrlEncoded(bundlePurchaseRequestBody),
+      headers: {
+        Host: "partner.steam-api.com",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "*/*",
+      },
     });
   } catch (err) {
     res.status(500);
@@ -217,7 +237,7 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
   let steamParsedResponse;
 
   try {
-    steamParsedResponse = JSON.parse(steamResponse.body);
+    steamParsedResponse = JSON.parse(steamResponse.body).response;
   } catch (err) {
     res.status(500);
     res.send({
@@ -228,11 +248,11 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
     return;
   }
 
-  if (steamParsedResponse.result === "Failure") {
+  if (steamParsedResponse.result !== "OK") {
     res.status(500);
     res.send({
       ok: false,
-      cause: `SteamApi Error: ${steamParsedResponse.error?.errordesc}`,
+      cause: `SteamApi Error: ${JSON.stringify(steamParsedResponse)}`,
       detail: steamParsedResponse.error,
     });
 
@@ -249,9 +269,11 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
     timeCreated: Date.now(),
     timeFinalized: -1,
     finalized: false,
+    recurring: bundle.recurring,
     vendorData: {
       name: "STEAM",
-      orderId: orderId,
+      orderId: steamParsedResponse.params.orderid,
+      transactionId: steamParsedResponse.params.transid,
       userId: req.body.userId,
     },
   });

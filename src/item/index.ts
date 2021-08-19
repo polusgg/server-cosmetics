@@ -79,7 +79,7 @@ router.get("/auid/:item", async (req, res) => {
 });
 
 router.get("/:item", async (req, res) => {
-  const id = req.params.item.split("-").join("");
+  const id = req.params.item;
 
   const item = await database.collections.items.findOne({ id });
 
@@ -112,7 +112,7 @@ router.put("/:item", authenticate(async (req, res): Promise<void> => {
     return;
   }
 
-  req.body.id = req.params.item.split("-").join("");
+  req.body.id = req.params.item;
 
   const validateItem = ajv.compile(itemSchema);
   const valid = validateItem(req.body);
@@ -166,7 +166,7 @@ router.patch("/:item", authenticate(async (req, res): Promise<void> => {
     return;
   }
 
-  req.body.id = req.params.item.split("-").join("");
+  req.body.id = req.params.item;
 
   const validateItem = ajv.compile(partialItemSchema);
   const valid = validateItem(req.body);

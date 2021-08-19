@@ -3,8 +3,8 @@ import { authenticate } from "../middleware/authenticate";
 import { Router as createRouter } from "express";
 import formUrlEncoded from "form-urlencoded";
 import { CosmeticDatabase } from "../..";
+import got, { Response } from "got";
 import Ajv from "ajv";
-import got from "got";
 
 declare const database: CosmeticDatabase;
 
@@ -32,7 +32,7 @@ router.get("/", authenticate((req, res) => {
 }));
 
 router.get("/:purchase", authenticate(async (req, res) => {
-  const id = req.params.purchase.split("-").join("");
+  const id = req.params.purchase;
 
   const purchase = await database.collections.purchases.findOne({ id });
 
@@ -75,7 +75,7 @@ router.patch("/:purchase", authenticate(async (req, res): Promise<void> => {
     return;
   }
 
-  req.body.id = req.params.purchase.split("-").join("");
+  req.body.id = req.params.purchase;
 
   const validatePurchase = ajv.compile(partialPurchaseSchema);
   const valid = validatePurchase(req.body);
@@ -108,7 +108,7 @@ router.patch("/:purchase", authenticate(async (req, res): Promise<void> => {
 }));
 
 router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> => {
-  const purchase = await database.collections.purchases.findOne({ id: req.params.purchase.split("-").join("") });
+  const purchase = await database.collections.purchases.findOne({ id: req.params.purchase });
 
   if (purchase === null) {
     res.status(404);
@@ -135,18 +135,23 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
       let response;
 
       try {
-        response = await got("https://partner.steam-api.com/ISteamMicroTxn/FinalizeTxn/v2/", {
+        response = await got.post("https://partner.steam-api.com/ISteamMicroTxnSandbox/FinalizeTxn/v2/", {
           body: formUrlEncoded({
             key: process.env.STEAM_PUBLISHER_KEY,
             orderid: purchase.vendorData.orderId,
             appid: 1653240,
           }),
+          headers: {
+            Host: "partner.steam-api.com",
+            "Content-Type": "application/x-www-form-urlencoded",
+            Accept: "*/*",
+          },
         });
       } catch (err) {
         res.status(500);
         res.send({
           ok: false,
-          cause: `SteamApi Error: ${err.response.body}`,
+          cause: `SteamApi Error: ${err?.response?.body}`,
         });
 
         return;
@@ -180,7 +185,7 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
       purchase.finalized = true;
       purchase.timeFinalized = Date.now();
 
-      await database.collections.purchases.updateOne({ id: req.params.purchase.split("-").join("") }, purchase);
+      await database.collections.purchases.replaceOne({ id: req.params.purchase }, purchase);
 
       res.status(200);
       res.send({
@@ -189,7 +194,6 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
 
       return;
     }
-    case "PLAY_STORE":
     case "FREE":
     default:
       res.status(400);
@@ -199,3 +203,50 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
       });
   }
 }));
+
+router.get(`/:purchase/vendor`, async (req, res) => {
+  let steamResponse: Response<string>;
+
+  const purchase = await database.collections.purchases.findOne({ id: req.params.purchase });
+
+  if (purchase?.vendorData.name === "STEAM") {
+    try {
+      steamResponse = await got.get(`https://partner.steam-api.com/ISteamMicroTxnSandbox/GetUserAgreementInfo/v1/?key=${process.env.STEAM_PUBLISHER_KEY}&appid=1653240&steamid=${purchase.vendorData.userId}`);
+    } catch (err) {
+      res.status(500);
+      res.send({
+        ok: false,
+        cause: `SteamApi Error: ${err.response.body}`,
+      });
+
+      return;
+    }
+
+    let steamParsedResponse;
+
+    try {
+      steamParsedResponse = JSON.parse(steamResponse.body).response;
+    } catch (err) {
+      res.status(500);
+      res.send({
+        ok: false,
+        cause: `Critical SteamApi Error: ${steamResponse.body}`,
+      });
+
+      return;
+    }
+
+    if (steamParsedResponse.result === "Failure") {
+      res.status(500);
+      res.send({
+        ok: false,
+        cause: `SteamApi Error: ${steamParsedResponse.error?.errordesc}`,
+        detail: steamParsedResponse.error,
+      });
+
+      return;
+    }
+
+    res.send(steamParsedResponse.params.agreements);
+  }
+});

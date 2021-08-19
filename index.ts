@@ -26,15 +26,14 @@ export type CosmeticDatabase = Database<CosmeticCollections>;
     throw new Error("Authentication token is required. Set environment variable: ACCOUNT_AUTH_TOKEN");
   }
 
-  (global as any).database = await Database
-    .connect<CosmeticCollections>({
-      url: process.env.DATABASE_URL ?? DatabaseConfig.url,
-      caCertPath: process.env.CA_CERT_PATH ?? DatabaseConfig.caCertPath
-    }, {
-      items: undefined as any,
-      bundles: undefined as any,
-      purchases: undefined as any
-    });
+  (global as any).database = await Database.connect<CosmeticCollections>({
+    url: process.env.DATABASE_URL ?? DatabaseConfig.url,
+    caCertPath: process.env.CA_CERT_PATH ?? DatabaseConfig.caCertPath,
+  }, {
+    items: undefined as any,
+    bundles: undefined as any,
+    purchases: undefined as any,
+  });
 
   await database.collections.items.createIndex({ id: 1 }, { unique: true });
 
