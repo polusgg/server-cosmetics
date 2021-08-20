@@ -247,6 +247,20 @@ router.get(`/:purchase/vendor`, async (req, res) => {
       return;
     }
 
-    res.send(steamParsedResponse.params.agreements);
+    //@ts-expect-error
+    const agreement: any = Array.from(Object.values(steamParsedResponse.params.agreements)).find(o => purchase.vendorData.transactionId === o.agreementid);
+
+    res.send({
+      ok: true,
+      data: {
+        period: agreement.period,
+        frequency: agreement.frequency,
+        recurringAmount: agreement.recurringamt,
+        active: agreement.status === "Active",
+        currency: agreement.currency,
+        startDate: new Date(parseInt(agreement.startdate.slice(0, 4), 10), parseInt(agreement.startdate.slice(4, 6), 10), parseInt(agreement.startdate.slice(6, 8), 10)).getTime(),
+        bundle: purchase.bundleId,
+      },
+    });
   }
 });

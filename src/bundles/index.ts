@@ -200,10 +200,7 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
     itemid: [543],
     qty: [1],
     amount: [bundle.priceUsd],
-    description: [bundle.description],
-    startdate: [new Date().toISOString()],
-    recurringamt: [bundle.priceUsd],
-    frequency: [1],
+    description: [bundle.name],
   } as any;
 
   let steamResponse: Response<string>;
@@ -211,9 +208,12 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
   if (bundle.recurring) {
     bundlePurchaseRequestBody.billingtype = ["Steam"];
     bundlePurchaseRequestBody.period = ["Month"];
+    bundlePurchaseRequestBody.frequency = [1];
+    bundlePurchaseRequestBody.recurringamt = [bundle.priceUsd];
+    bundlePurchaseRequestBody.startdate = [new Date().toISOString()];
   }
 
-  console.log()
+  console.log(bundlePurchaseRequestBody);
 
   try {
     steamResponse = await got.post("https://partner.steam-api.com/ISteamMicroTxnSandbox/InitTxn/v3/", {
