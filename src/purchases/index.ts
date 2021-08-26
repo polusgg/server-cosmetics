@@ -160,7 +160,7 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
       let parsedResponse;
 
       try {
-        parsedResponse = JSON.parse(response.body);
+        parsedResponse = JSON.parse(response.body).response;
       } catch (err) {
         res.status(500);
         res.send({
