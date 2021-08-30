@@ -1,7 +1,7 @@
 import { UserResponseStructure } from "@polusgg/module-polusgg-auth-api/src/types/userResponseStructure";
 import { ApiResponse } from "@polusgg/module-polusgg-auth-api/src/request/request";
 import { Request, Response } from "express";
-import got from "got/dist/source";
+import got, { RequestError } from "got/dist/source";
 
 export type AuthenticatedRequest = Request & { user: UserResponseStructure };
 
@@ -35,7 +35,7 @@ export function authenticate(fn: (req: AuthenticatedRequest, res: Response) => v
       // eslint-disable-next-line @typescript-eslint/naming-convention
       user = JSON.parse((await got(`https://account.polus.gg/api-private/v1/users/${uuid}`, { headers: { Authorization: `Bearer ${process.env.ACCOUNT_AUTH_TOKEN}`, Accept: "application/json" } })).body) as ApiResponse<UserResponseStructure>;
     } catch (err) {
-      if (err.response.statusCode === 404) {
+      if ((err as RequestError).response!.statusCode === 404) {
         res.send({
           ok: false,
           cause: `Authentication error: Invalid authorization header`,
