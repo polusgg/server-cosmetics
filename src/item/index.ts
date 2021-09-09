@@ -11,7 +11,12 @@ export const router = createRouter();
 const ajv = new Ajv();
 
 router.get("/next", async (req, res) => {
-  const emitter = database.collections.items.find().sort({ amongUsId: -1 }).limit(1);
+  const emitter = database.collections.items.find({
+    // stupid perks have id of 0
+    amongUsId: { $gte: 10000000 },
+    // also just ignore perks because they are still stupid
+    type: { $not: { $eq: "PERK" } }
+  }).sort({ amongUsId: -1 }).limit(1);
   const items: Item[] = [];
 
   emitter.on("data", item => {
@@ -20,7 +25,7 @@ router.get("/next", async (req, res) => {
 
   await new Promise(resolve => emitter.once("end", resolve));
 
-  const amongUsId = items.length > 0 ? items[0].amongUsId + 2 : 10_000_000;
+  const amongUsId = items.length > 0 ? items[0].amongUsId + 2 : 10000000;
 
   res.send({
     ok: true,
@@ -30,7 +35,12 @@ router.get("/next", async (req, res) => {
 
 //check that there are any duplicates!!!
 router.post("/next", async (req, res) => {
-  const emitter = database.collections.items.find();
+  const emitter = database.collections.items.find({
+    // stupid perks have id of 0
+    amongUsId: { $gt: 10000000 },
+    // also just ignore perks because they are still stupid
+    type: { $not: { $eq: "PERK" } }
+  });
   const items: Item[] = [];
 
   emitter.on("data", item => {
