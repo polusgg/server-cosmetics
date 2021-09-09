@@ -247,8 +247,7 @@ router.get(`/:purchase/vendor`, async (req, res) => {
       return;
     }
 
-    //@ts-expect-error
-    const agreement: any = Array.from(Object.values(steamParsedResponse.params.agreements)).find(o => purchase.vendorData.transactionId === o.agreementid);
+    const agreement: any = Array.from(Object.values(steamParsedResponse.params.agreements))[0];
 
     res.send({
       ok: true,
@@ -264,3 +263,87 @@ router.get(`/:purchase/vendor`, async (req, res) => {
     });
   }
 });
+
+router.get(`/userTier/:user`, authenticate(async (req, res) => {
+  let steamResponse: Response<string>;
+
+  const purchases = await database.collections.purchases.find({ purchaser: req.params.user }).toArray();
+
+  const purchase = await purchases.find(p => p.recurring);
+
+  if (purchase === undefined) {
+    res.send({
+      ok: true,
+      data: undefined,
+    });
+
+    return;
+  }
+
+  if (purchase.purchaser !== req.user.client_id) {
+    res.send({
+      ok: false,
+      cause: "No permissions",
+    });
+
+    return;
+  }
+
+  if (purchase.vendorData.name === "STEAM") {
+    try {
+      steamResponse = await got.get(`https://partner.steam-api.com/ISteamMicroTxnSandbox/GetUserAgreementInfo/v1/?key=${process.env.STEAM_PUBLISHER_KEY}&appid=1653240&steamid=${purchase.vendorData.userId}`);
+    } catch (err) {
+      res.status(500);
+      res.send({
+        ok: false,
+        cause: `SteamApi Error: ${err.response.body}`,
+      });
+
+      return;
+    }
+
+    let steamParsedResponse;
+
+    try {
+      steamParsedResponse = JSON.parse(steamResponse.body).response;
+    } catch (err) {
+      res.status(500);
+      res.send({
+        ok: false,
+        cause: `Critical SteamApi Error: ${steamResponse.body}`,
+      });
+
+      return;
+    }
+
+    if (steamParsedResponse.result === "Failure") {
+      res.status(500);
+      res.send({
+        ok: false,
+        cause: `SteamApi Error: ${steamParsedResponse.error?.errordesc}`,
+        detail: steamParsedResponse.error,
+      });
+
+      return;
+    }
+
+    const agreement: any = Array.from(Object.values(steamParsedResponse.params.agreements))[0];
+
+    const bundle = await database.collections.bundles.findOne({ id: purchase.bundleId });
+
+    res.send({
+      ok: true,
+      data: {
+        period: agreement.period,
+        frequency: agreement.frequency,
+        recurringAmount: agreement.recurringamt,
+        active: agreement.status === "Active",
+        currency: agreement.currency,
+        startDate: new Date(parseInt(agreement.startdate.slice(0, 4), 10), parseInt(agreement.startdate.slice(4, 6), 10), parseInt(agreement.startdate.slice(6, 8), 10)).getTime(),
+        bundle,
+        // items: await Promise.all(bundle!.items.map(async i => database.collections.items.findOne({ id: i }))),
+        purchase,
+      },
+    });
+  }
+}));
