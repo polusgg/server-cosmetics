@@ -6,6 +6,7 @@ import { router as itemRouter } from "./src/item";
 import { router as bundleRouter } from "./src/bundles";
 import { router as purchasesRouter } from "./src/purchases";
 import express from "express";
+import { Client } from "discord.js";
 
 const app = express();
 
@@ -20,6 +21,10 @@ export type CosmeticCollections = {
 };
 
 export type CosmeticDatabase = Database<CosmeticCollections>;
+
+export const discordClient: Client = new Client({ intents: [] });
+
+discordClient.login("ODg1NzU2ODMyNjcxNDg1OTYz.YTrrVQ.1aTgIEz4ram2oVN4k2Ynt8RlfHM");
 
 (async (): Promise<void> => {
   if (process.env.ACCOUNT_AUTH_TOKEN === undefined) {
