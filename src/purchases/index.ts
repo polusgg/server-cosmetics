@@ -1,8 +1,9 @@
+import { UserResponseStructure } from "@polusgg/module-polusgg-auth-api/src/types/userResponseStructure";
 import { partialPurchaseSchema, Purchase } from "@polusgg/module-cosmetics/src/types/purchase";
 import { authenticate } from "../middleware/authenticate";
 import { Router as createRouter } from "express";
 import formUrlEncoded from "form-urlencoded";
-import { CosmeticDatabase } from "../..";
+import { CosmeticDatabase, discordClient } from "../..";
 import got, { Response } from "got";
 import Ajv from "ajv";
 
@@ -135,7 +136,7 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
       let response;
 
       try {
-        response = await got.post("https://partner.steam-api.com/ISteamMicroTxnSandbox/FinalizeTxn/v2/", {
+        response = await got.post("https://partner.steam-api.com/ISteamMicroTxn/FinalizeTxn/v2/", {
           body: formUrlEncoded({
             key: process.env.STEAM_PUBLISHER_KEY,
             orderid: purchase.vendorData.orderId,
@@ -191,8 +192,7 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
       res.send({
         ok: true,
       });
-
-      return;
+      break;
     }
     case "FREE":
     default:
@@ -201,6 +201,23 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
         ok: false,
         cause: "Unsupported vendor",
       });
+  }
+
+  if (purchase.assignedDiscordRole) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const user = JSON.parse((await got(`https://account.polus.gg/api-private/v1/users/${purchase.purchaser}`, { headers: { Authorization: `Bearer ${process.env.ACCOUNT_AUTH_TOKEN}`, Accept: "application/json" } })).body) as UserResponseStructure | undefined;
+
+    if (user?.discord_id) {
+      let pggGuild = discordClient.guilds.cache.get("820165016400429067");
+
+      if (!pggGuild) {
+        pggGuild = await discordClient.guilds.fetch("820165016400429067");
+      }
+
+      const member = await pggGuild.members.fetch({ user: user.discord_id });
+
+      member.roles.add(purchase.assignedDiscordRole);
+    }
   }
 }));
 
@@ -211,7 +228,7 @@ router.get(`/:purchase/vendor`, async (req, res) => {
 
   if (purchase?.vendorData.name === "STEAM") {
     try {
-      steamResponse = await got.get(`https://partner.steam-api.com/ISteamMicroTxnSandbox/GetUserAgreementInfo/v1/?key=${process.env.STEAM_PUBLISHER_KEY}&appid=1653240&steamid=${purchase.vendorData.userId}`);
+      steamResponse = await got.get(`https://partner.steam-api.com/ISteamMicroTxn/GetUserAgreementInfo/v1/?key=${process.env.STEAM_PUBLISHER_KEY}&appid=1653240&steamid=${purchase.vendorData.userId}`);
     } catch (err) {
       res.status(500);
       res.send({
@@ -291,7 +308,7 @@ router.get(`/userTier/:user`, authenticate(async (req, res) => {
 
   if (purchase.vendorData.name === "STEAM") {
     try {
-      steamResponse = await got.get(`https://partner.steam-api.com/ISteamMicroTxnSandbox/GetUserAgreementInfo/v1/?key=${process.env.STEAM_PUBLISHER_KEY}&appid=1653240&steamid=${purchase.vendorData.userId}`);
+      steamResponse = await got.get(`https://partner.steam-api.com/ISteamMicroTxn/GetUserAgreementInfo/v1/?key=${process.env.STEAM_PUBLISHER_KEY}&appid=1653240&steamid=${purchase.vendorData.userId}`);
     } catch (err) {
       res.status(500);
       res.send({

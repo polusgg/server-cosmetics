@@ -8,6 +8,7 @@ import * as crypto from "crypto";
 import { uuid } from "uuidv4";
 import Ajv from "ajv";
 import { Item } from "@polusgg/module-cosmetics/src/types/item";
+import { Purchase } from "@polusgg/module-cosmetics/src/types";
 
 declare const database: CosmeticDatabase;
 
@@ -216,7 +217,7 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
   console.log(bundlePurchaseRequestBody);
 
   try {
-    steamResponse = await got.post("https://partner.steam-api.com/ISteamMicroTxnSandbox/InitTxn/v3/", {
+    steamResponse = await got.post("https://partner.steam-api.com/ISteamMicroTxn/InitTxn/v3/", {
       body: formUrlEncoded(bundlePurchaseRequestBody),
       headers: {
         Host: "partner.steam-api.com",
@@ -261,7 +262,7 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
 
   const purchaseId = uuid();
 
-  await database.collections.purchases.insertOne({
+  const o: Purchase = {
     id: purchaseId,
     bundleId: bundle.id,
     cost: bundle.priceUsd,
@@ -276,7 +277,13 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
       transactionId: steamParsedResponse.params.transid,
       userId: req.body.userId,
     },
-  });
+  };
+
+  if (bundle.assignsDiscordRole) {
+    o.assignedDiscordRole = bundle.assignsDiscordRole;
+  }
+
+  await database.collections.purchases.insertOne(o);
 
   res.send({
     ok: true,
