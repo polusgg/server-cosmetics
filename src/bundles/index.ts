@@ -187,6 +187,32 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
     return;
   }
 
+  if (bundle.priceUsd == 0) {
+    const purchaseId = uuid();
+
+    //TODO: Assigning discord roles doesn't work for free items
+
+    await database.collections.purchases.insertOne({
+      bundleId: bundle.id,
+      cost: 0,
+      finalized: true,
+      id: purchaseId,
+      purchaser: req.user.client_id,
+      recurring: bundle.recurring,
+      timeCreated: Date.now(),
+      timeFinalized: Date.now(),
+      vendorData: {
+        name: "FREE",
+        note: "AUTOMATED - Through steam purchase of free item",
+      },
+    });
+
+    res.send({
+      ok: true,
+      purchaseId,
+    });
+  }
+
   const orderId = BigInt(`0x${crypto.randomBytes(8).toString("hex")}`).toString();
 
   const bundlePurchaseRequestBody = {
