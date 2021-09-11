@@ -58,11 +58,28 @@ router.post("/next", async (req, res) => {
 router.get("/", authenticate(async (req, res) => {
   //TODO: implement perk for cosmetics
 
+  //@ts-ignore
+  console.log(`[${req._pgg_id}] [/v1/item/] Inside route`, Date.now());
+
   const purchases = await database.collections.purchases.find({ purchaser: req.user.client_id, finalized: true });
+
+  //@ts-ignore
+  console.log(`[${req._pgg_id}] [/v1/item/] Fetched Purchases`, Date.now());
+
   const bundles = await database.collections.bundles.find({ id: { $in: await purchases.map(p => p.bundleId).toArray() } });
+
+  //@ts-ignore
+  console.log(`[${req._pgg_id}] [/v1/item/] Fetched Bundles`, Date.now());
+
   const items = await database.collections.items.find({ id: { $in: await (await bundles.toArray()).map(p => p.items).flat() } });
 
+  //@ts-ignore
+  console.log(`[${req._pgg_id}] [/v1/item/] Fetched Items`, Date.now());
+
   res.send({ ok: true, data: await items.toArray() });
+
+  //@ts-ignore
+  console.log(`[${req._pgg_id}] [/v1/item/] Responded`, Date.now());
 }));
 
 router.get("/auid/:item", async (req, res) => {
