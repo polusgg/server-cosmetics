@@ -7,12 +7,6 @@ export type AuthenticatedRequest = Request & { user: UserResponseStructure };
 
 export function authenticate(fn: (req: AuthenticatedRequest, res: Response) => void) {
   return async (req: Request, res: Response): Promise<void> => {
-    //@ts-ignore
-    req._pgg_id = Math.random();
-
-    //@ts-ignore
-    console.log(`[${req._pgg_id}] [Authenticate] Entered method`, Date.now());
-
     if (req.headers.authorization === undefined) {
       res.status(400);
       res.send({
@@ -36,9 +30,6 @@ export function authenticate(fn: (req: AuthenticatedRequest, res: Response) => v
     }
 
     let user;
-
-    //@ts-ignore
-    console.log(`[${req._pgg_id}] [Authenticate] Before Account API GET`, Date.now());
 
     try {
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -75,9 +66,6 @@ export function authenticate(fn: (req: AuthenticatedRequest, res: Response) => v
 
       return;
     }
-
-    //@ts-ignore
-    console.log(`[${req._pgg_id}] [Authenticate] Apply Data & return`, Date.now());
 
     (req as AuthenticatedRequest).user = user.data;
 
