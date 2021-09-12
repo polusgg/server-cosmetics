@@ -1,4 +1,4 @@
-FROM node:15.12.0-alpine3.13
+FROM node:16.9-alpine3.13
 
 WORKDIR /usr/src/server-cosmetics
 
