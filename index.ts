@@ -24,7 +24,9 @@ export type CosmeticDatabase = Database<CosmeticCollections>;
 
 export const discordClient: Client = new Client({ intents: [] });
 
-discordClient.login("ODg1NzU2ODMyNjcxNDg1OTYz.YTrrVQ.1aTgIEz4ram2oVN4k2Ynt8RlfHM");
+discordClient.login("ODg1NzU2ODMyNjcxNDg1OTYz.YTrrVQ.OfGVjkQDGGgVSsoWREMQZ9ppvVA");
+
+discordClient.on("error", console.log);
 
 (async (): Promise<void> => {
   if (process.env.ACCOUNT_AUTH_TOKEN === undefined) {
