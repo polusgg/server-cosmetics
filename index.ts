@@ -24,7 +24,7 @@ export type CosmeticDatabase = Database<CosmeticCollections>;
 
 export const discordClient: Client = new Client({ intents: [] });
 
-discordClient.login("ODg1NzU2ODMyNjcxNDg1OTYz.YTrrVQ.OfGVjkQDGGgVSsoWREMQZ9ppvVA");
+discordClient.login("ODg1NzU2ODMyNjcxNDg1OTYz.YTrrVQ.evGUSa05tXyx8xDoO665clnhXws");
 
 discordClient.on("error", console.log);
 

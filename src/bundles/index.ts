@@ -192,25 +192,34 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
 
     //TODO: Assigning discord roles doesn't work for free items
 
-    await database.collections.purchases.insertOne({
-      bundleId: bundle.id,
-      cost: 0,
-      finalized: true,
-      id: purchaseId,
-      purchaser: req.user.client_id,
-      recurring: bundle.recurring,
-      timeCreated: Date.now(),
-      timeFinalized: Date.now(),
-      vendorData: {
-        name: "FREE",
-        note: "AUTOMATED - Through steam purchase of free item",
-      },
-    });
+    const purchase = await database.collections.purchases.findOne({ bundleId: bundle.id, finalized: true });
 
-    res.send({
-      ok: true,
-      purchaseId,
-    });
+    if (purchase === null) {
+      await database.collections.purchases.insertOne({
+        bundleId: bundle.id,
+        cost: 0,
+        finalized: true,
+        id: purchaseId,
+        purchaser: req.user.client_id,
+        recurring: bundle.recurring,
+        timeCreated: Date.now(),
+        timeFinalized: Date.now(),
+        vendorData: {
+          name: "FREE",
+          note: "AUTOMATED - Through steam purchase of free item",
+        },
+      });
+  
+      res.send({
+        ok: true,
+        purchaseId,
+      });
+    } else {
+      res.send({
+        ok: false,
+        cause: "You already claimed this bundle",
+      });
+    }
   }
 
   const orderId = BigInt(`0x${crypto.randomBytes(8).toString("hex")}`).toString();
