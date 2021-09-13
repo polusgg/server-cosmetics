@@ -195,6 +195,10 @@ router.post("/:purchase/finalise", authenticate(async (req, res): Promise<void> 
       break;
     }
     case "FREE":
+      res.send({
+        ok: true,
+      });
+      break;
     default:
       res.status(400);
       res.send({
