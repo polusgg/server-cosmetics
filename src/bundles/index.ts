@@ -192,7 +192,7 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
 
     //TODO: Assigning discord roles doesn't work for free items
 
-    const purchase = await database.collections.purchases.findOne({ bundleId: bundle.id, finalized: true });
+    const purchase = await database.collections.purchases.findOne({ purchaser: req.user.client_id, bundleId: bundle.id, finalized: true });
 
     if (purchase === null) {
       await database.collections.purchases.insertOne({
