@@ -220,6 +220,8 @@ router.post("/:bundle/purchase/steam", authenticate(async (req, res): Promise<vo
         cause: "You already claimed this bundle",
       });
     }
+
+    return
   }
 
   const orderId = BigInt(`0x${crypto.randomBytes(8).toString("hex")}`).toString();
